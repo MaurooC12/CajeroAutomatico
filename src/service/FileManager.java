@@ -1,0 +1,190 @@
+package service;
+
+import model.Usuario;
+import model.Cuenta;
+import model.Tarjeta;
+import model.Movimiento;
+import java.io.*;
+import java.util.*;
+
+public class FileManager {
+    private String rutaBase;
+
+    public FileManager(String rutaBase) {
+        this.rutaBase = rutaBase;
+        crearCarpetas();
+    }
+
+    private void crearCarpetas() {
+        new File(rutaBase).mkdirs();
+    }
+
+    // ==================== USUARIOS ====================
+    
+    public List<Usuario> cargarUsuarios() {
+        List<Usuario> lista = new ArrayList<>();
+        File file = new File(rutaBase + "/usuarios.txt");
+        if (!file.exists()) return lista;
+        
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                String[] parts = linea.split("\\|");
+                if (parts.length >= 5) {
+                    lista.add(new Usuario(parts[0], parts[1], parts[2], parts[3], parts[4]));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return lista;
+    }
+
+    public void guardarUsuarios(List<Usuario> usuarios) {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(rutaBase + "/usuarios.txt"))) {
+            for (Usuario u : usuarios) {
+                pw.println(u.getId() + "|" + u.getNombres() + "|" + u.getDocumento() + "|" + u.getTelefono() + "|" + u.getPassword());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // ==================== CUENTAS ====================
+    
+    public List<Cuenta> cargarCuentas() {
+        List<Cuenta> lista = new ArrayList<>();
+        File file = new File(rutaBase + "/cuentas.txt");
+        if (!file.exists()) return lista;
+        
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                String[] parts = linea.split("\\|");
+                if (parts.length >= 4) {
+                    lista.add(new Cuenta(parts[0], parts[1], Double.parseDouble(parts[2]), Double.parseDouble(parts[3])));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return lista;
+    }
+
+    public void guardarCuentas(List<Cuenta> cuentas) {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(rutaBase + "/cuentas.txt"))) {
+            for (Cuenta c : cuentas) {
+                pw.println(c.getNumero() + "|" + c.getIdUsuario() + "|" + c.getSaldo() + "|" + c.getLimiteDiario());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // ==================== TARJETAS (GUARDA PIN REAL) ====================
+    
+    public List<Tarjeta> cargarTarjetas() {
+        List<Tarjeta> lista = new ArrayList<>();
+        File file = new File(rutaBase + "/tarjetas.txt");
+        if (!file.exists()) return lista;
+        
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                String[] parts = linea.split("\\|");
+                if (parts.length >= 5) {
+                    // parts[0]=numero, parts[1]=numCuenta, parts[2]=pin REAL, parts[3]=rol, parts[4]=activa
+                    Tarjeta t = new Tarjeta(parts[0], parts[1], parts[2], parts[3]);
+                    if (!Boolean.parseBoolean(parts[4])) {
+                        t.bloquear();
+                    }
+                    lista.add(t);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return lista;
+    }
+
+    public void guardarTarjetas(List<Tarjeta> tarjetas) {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(rutaBase + "/tarjetas.txt"))) {
+            for (Tarjeta t : tarjetas) {
+                // Guardar el PIN REAL (sin asteriscos)
+                pw.println(t.getNumero() + "|" + t.getNumCuenta() + "|" + t.getPin() + "|" + t.getRol() + "|" + t.isActiva());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // ==================== MOVIMIENTOS ====================
+    
+    public List<Movimiento> cargarMovimientos() {
+        List<Movimiento> lista = new ArrayList<>();
+        File file = new File(rutaBase + "/movimientos.txt");
+        if (!file.exists()) return lista;
+        
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                String[] parts = linea.split("\\|");
+                if (parts.length >= 6) {
+                    lista.add(new Movimiento(parts[0], parts[1], parts[2], parts[3], Double.parseDouble(parts[4]), parts[5]));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return lista;
+    }
+
+    public void guardarMovimientos(List<Movimiento> movimientos) {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(rutaBase + "/movimientos.txt"))) {
+            for (Movimiento m : movimientos) {
+                pw.println(m.getId() + "|" + m.getTipo() + "|" + m.getCuentaOrigen() + "|" + m.getCuentaDestino() + "|" + m.getMonto() + "|" + m.getDescripcion());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // ==================== CAJERO ====================
+
+    public Map<Integer, Integer> cargarCajero() {
+        Map<Integer, Integer> mapa = new LinkedHashMap<>();
+        File file = new File(rutaBase + "/cajero.txt");
+        if (!file.exists()) {
+            // Valores por defecto
+            mapa.put(100000, 50);
+            mapa.put(50000, 100);
+            mapa.put(20000, 200);
+            mapa.put(10000, 500);
+            guardarCajero(mapa);
+            return mapa;
+        }
+        
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                String[] parts = linea.split("\\|");
+                if (parts.length == 2 && !parts[0].equals("capacidadMaxima")) {
+                    mapa.put(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return mapa;
+    }
+
+    public void guardarCajero(Map<Integer, Integer> denominaciones) {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(rutaBase + "/cajero.txt"))) {
+            for (Map.Entry<Integer, Integer> entry : denominaciones.entrySet()) {
+                pw.println(entry.getKey() + "|" + entry.getValue());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}

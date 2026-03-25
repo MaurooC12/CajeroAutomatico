@@ -1,0 +1,1 @@
+M1|CONSIGNACION||1001|150000.0|Consignacion en cajero
