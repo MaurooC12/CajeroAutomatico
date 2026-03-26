@@ -1,1 +1,7 @@
 M1|CONSIGNACION||1001|150000.0|Consignacion en cajero
+M2|ABASTECIMIENTO|||1000000.0|Abastecimiento por Valores
+M3|RETIRO|1001||50000.0|Retiro en cajero
+M4|CONSIGNACION||1001|19000000|Consignacion en cajero
+M5|RETIRO|1001||20000000|Retiro en cajero
+M6|CONSIGNACION||1001|19000000|Consignacion en cajero
+M7|RETIRO_EXCEDENTES|||37000000|Retiro de excedentes

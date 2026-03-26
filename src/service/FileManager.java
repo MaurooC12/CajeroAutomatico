@@ -5,6 +5,7 @@ import model.Cuenta;
 import model.Tarjeta;
 import model.Movimiento;
 import java.io.*;
+import java.math.BigDecimal;
 import java.util.*;
 
 public class FileManager {
@@ -74,7 +75,7 @@ public class FileManager {
     public void guardarCuentas(List<Cuenta> cuentas) {
         try (PrintWriter pw = new PrintWriter(new FileWriter(rutaBase + "/cuentas.txt"))) {
             for (Cuenta c : cuentas) {
-                pw.println(c.getNumero() + "|" + c.getIdUsuario() + "|" + c.getSaldo() + "|" + c.getLimiteDiario());
+                pw.println(c.getNumero() + "|" + c.getIdUsuario() + "|" + formatearNumero(c.getSaldo()) + "|" + formatearNumero(c.getLimiteDiario()));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -142,11 +143,15 @@ public class FileManager {
     public void guardarMovimientos(List<Movimiento> movimientos) {
         try (PrintWriter pw = new PrintWriter(new FileWriter(rutaBase + "/movimientos.txt"))) {
             for (Movimiento m : movimientos) {
-                pw.println(m.getId() + "|" + m.getTipo() + "|" + m.getCuentaOrigen() + "|" + m.getCuentaDestino() + "|" + m.getMonto() + "|" + m.getDescripcion());
+                pw.println(m.getId() + "|" + m.getTipo() + "|" + m.getCuentaOrigen() + "|" + m.getCuentaDestino() + "|" + formatearNumero(m.getMonto()) + "|" + m.getDescripcion());
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private String formatearNumero(double valor) {
+        return BigDecimal.valueOf(valor).toPlainString();
     }
 
     // ==================== CAJERO ====================

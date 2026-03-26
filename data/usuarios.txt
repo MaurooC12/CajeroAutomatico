@@ -1,2 +1,3 @@
 ADMIN|Administrador|000|000|
 VALORES|Empresa Valores|000|000|
+C001|Mauricio Prueba Cepeda|1007770285|3222365949|
